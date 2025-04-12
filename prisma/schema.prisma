@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  password         String?
+  name             String?
+  profile_pic      String?
+  dob              DateTime?
+  mobileNumber     String?   @unique
+  location         Json?
+  status           String    @default("active")
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now()) @updatedAt
+
+  videos   Video[]
+  comments Comment[]
+  likes    Like[]
+}
+
+model Video {
+  id          String   @id @default(uuid())
+  title       String?
+  description String?
+  videoUrl    String
+  thumbnail   String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  likes    Like[]
+  comments Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  video     Video    @relation(fields: [videoId], references: [id])
+  videoId   String
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  video     Video    @relation(fields: [videoId], references: [id])
+  videoId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, videoId]) 
+}
